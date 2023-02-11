@@ -8,7 +8,11 @@ packages = [{include = "carcass_models_bot"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+pyTelegramBotAPI = "^4.10.0"
 
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
 
 [build-system]
 requires = ["poetry-core"]
