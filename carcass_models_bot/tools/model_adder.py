@@ -29,9 +29,9 @@ def choose_file():
 def insert_data():
     image_path = file_path_label.cget("text")
     model_id = generate_id()
-    name = str(name_entry.get())
-    description = str(description_entry.get())
-    price = str(price_entry.get())
+    name = str(name_entry.get()).strip()
+    description = str(description_entry.get()).strip()
+    price = str(price_entry.get()).strip()
 
     if image_path == "" or name == "" or description == "" or price == "":
         messagebox.showerror("Error", "Not all fields are filled!")

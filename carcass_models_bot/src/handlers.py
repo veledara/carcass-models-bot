@@ -75,18 +75,17 @@ def conversation(message) -> None:
             update_db(
                 "users", "scroll_message_id", scroll_message.id, "id", message.chat.id
             )
+            conn.commit()
+            insert_step("MENU", message.chat.id)
 
         else:
-            c.execute("SELECT * FROM models")
-            data = c.fetchall()
-            bot.send_photo(message.chat.id, photo=data[0][4])
-            # bot.send_message(
-            #     message.chat.id,
-            #     DO_NOT_KNOW_THE_COMMAND_MESSAGE,
-            #     reply_markup=menu_markup,
-            # )
+            bot.send_message(
+                message.chat.id,
+                DO_NOT_KNOW_THE_COMMAND_MESSAGE,
+                reply_markup=menu_markup,
+            )
     # TODO
-    elif check_step(message) == "OTHER":
+    elif check_step(message.chat.id) == "OTHER":
         pass
     else:
         pass
@@ -95,9 +94,67 @@ def conversation(message) -> None:
 @bot.callback_query_handler(func=lambda call: call.data.startswith("scroll_"))
 def scroll_callback(call) -> None:
     # Если пользователь новый и пытается что-то написать - говорим ему написать /start
-    if not user_exist(call.message):
+    if not user_exist(call.message.chat.id):
         bot.send_message(call.message.chat.id, NOT_REGISTERED_MESSAGE)
         return
+
+    available_models = show_models()
+    current_model_id = call.message.caption.split(": ")[1].split("\n")[0]
+    print(current_model_id)
+    position = search_id(available_models, current_model_id)
+    print(position)
+
+    if call.data == "scroll_right":
+        if overdue_scroll_handler(call):
+            return
+        scroll_handler(
+            call, available_models, int(position) + 1, 1, scroll_left_inline_markup
+        )
+    elif call.data == "scroll_delete":
+        bot.send_message(call.message.chat.id, "Фукнция скоро будет готова.")
+    elif call.data == "scroll_left":
+        if overdue_scroll_handler(call):
+            return
+        scroll_handler(
+            call,
+            available_models,
+            int(position) - 1,
+            len(available_models),
+            scroll_right_inline_markup,
+        )
+    else:
+        pass
+
+
+def scroll_handler(call, available_models, position, length, markup):
+    bot.edit_message_media(
+        chat_id=call.message.chat.id,
+        message_id=call.message.id,
+        media=telebot.types.InputMediaPhoto(
+            media=available_models[position][4],
+            caption=f"Модель №: {available_models[position][0]}\nНазвание модели: {available_models[position][1]}\nОписание модели: {available_models[position][2]}\n\n"
+            + f"Цена: <b>{available_models[position][3]}</b>",
+            parse_mode="HTML",
+        ),
+        reply_markup=markup
+        if position == len(available_models) - length
+        else scroll_mid_inline_markup,
+    )
+
+
+def search_id(available_models: list, search_value: str) -> str:
+    for index, item in enumerate(available_models):
+        if item[0] == search_value:
+            return index
+
+
+def overdue_scroll_handler(call):
+    temp = too_old(user_id=call.message.chat.id, call_message_id=call.message.id)
+    if temp:
+        bot.send_message(
+            call.message.chat.id, SCROLL_IS_TOO_OLD, reply_markup=menu_markup
+        )
+    return temp
 
 
 if __name__ == "__main__":

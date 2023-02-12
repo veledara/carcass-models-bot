@@ -50,6 +50,13 @@ def show_models() -> list:
     return available_models
 
 
+# Функция, проверяющая, устарели ли кнопки
+def too_old(user_id: str, call_message_id: str) -> bool:
+    c.execute(f"SELECT scroll_message_id FROM users WHERE id = '{user_id}'")
+    message_id = c.fetchone()[0]
+    return str(call_message_id) != str(message_id)
+
+
 # Фукнция, выбираюая значение из базы данных
 def select_from_db(
     table: str, value_to_select: str, where_column: str, where_value: str
