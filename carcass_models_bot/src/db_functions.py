@@ -43,7 +43,14 @@ def create_user(user_id: str, tg_username: str) -> None:
     conn.commit()
 
 
-# Фукнция, выбираюая значение из база данных
+# Фукнция, показывающая все модели доступные для покупки
+def show_models() -> list:
+    c.execute("SELECT * FROM models")
+    available_models = c.fetchall()
+    return available_models
+
+
+# Фукнция, выбираюая значение из базы данных
 def select_from_db(
     table: str, value_to_select: str, where_column: str, where_value: str
 ) -> list:
@@ -52,3 +59,17 @@ def select_from_db(
     )
     result = c.fetchone()
     return result
+
+
+# Фукнция, обновляющая значение в базе данных
+def update_db(
+    table: str,
+    column_to_update: str,
+    new_value: str,
+    where_column: str,
+    where_value: str,
+) -> None:
+    c.execute(
+        f"UPDATE {table} SET {column_to_update} = '{new_value}' WHERE {where_column} = '{where_value}'"
+    )
+    conn.commit()

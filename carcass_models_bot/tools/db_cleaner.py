@@ -11,4 +11,4 @@ def clear_table(database_path: str, table_name: str) -> None:
 
 if __name__ == "__main__":
     clear_table(r"carcass_models_bot\databases\carcass_models.db", "users")
-    clear_table(r"carcass_models_bot\databases\carcass_models.db", "models")
+    # clear_table(r"carcass_models_bot\databases\carcass_models.db", "models")

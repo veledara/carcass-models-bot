@@ -42,13 +42,49 @@ def conversation(message) -> None:
 
     if check_step(message.chat.id) == MENU_STEP:
         if message.text == LOOK_BUTTON:
-            bot.send_message(message.chat.id, "ее")
-        else:
-            bot.send_message(
-                message.chat.id,
-                DO_NOT_KNOW_THE_COMMAND_MESSAGE,
-                reply_markup=menu_markup,
+            scroll_message_id = select_from_db(
+                "users", "scroll_message_id", "id", message.chat.id
+            )[0]
+            if scroll_message_id:
+                try:
+                    bot.delete_message(
+                        chat_id=message.chat.id,
+                        message_id=scroll_message_id,
+                    )
+                except Exception as e:
+                    print(type(e))
+                    # обработать
+            available_models = show_models()
+            if not available_models:
+                scroll_message = bot.send_message(
+                    message.chat.id,
+                    ZERO_MODELS_MESSAGE,
+                    reply_markup=menu_markup,
+                )
+            else:
+                scroll_message = bot.send_photo(
+                    chat_id=message.chat.id,
+                    photo=available_models[0][4],
+                    caption=f"Модель №: {available_models[0][0]}\nНазвание модели: {available_models[0][1]}\nОписание модели: {available_models[0][2]}\n\n"
+                    + f"Цена: <b>{available_models[0][3]}</b>",
+                    reply_markup=scroll_one_inline_markup
+                    if len(available_models) == 1
+                    else scroll_right_inline_markup,
+                    parse_mode="HTML",
+                )
+            update_db(
+                "users", "scroll_message_id", scroll_message.id, "id", message.chat.id
             )
+
+        else:
+            c.execute("SELECT * FROM models")
+            data = c.fetchall()
+            bot.send_photo(message.chat.id, photo=data[0][4])
+            # bot.send_message(
+            #     message.chat.id,
+            #     DO_NOT_KNOW_THE_COMMAND_MESSAGE,
+            #     reply_markup=menu_markup,
+            # )
     # TODO
     elif check_step(message) == "OTHER":
         pass

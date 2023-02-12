@@ -39,9 +39,9 @@ def insert_data():
 
     with open(image_path, "rb") as image:
         image_data = image.read()
-        pic = sql.Binary(image_data)
         c.execute(
-            f"INSERT INTO models (id, name, description, price, picture) VALUES('{model_id}', '{name}', '{description}', '{price}', '{pic}')"
+            f"INSERT INTO models (id, name, description, price, picture) VALUES (?, ?, ?, ?, ?)",
+            (model_id, name, description, price, image_data),
         )
         conn.commit()
         messagebox.showinfo("Success", "Data successfully inserted into the database")
