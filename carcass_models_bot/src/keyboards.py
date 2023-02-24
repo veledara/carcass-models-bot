@@ -1,4 +1,4 @@
-from src.bot import telebot
+from src.bot_creation import telebot
 from src.messages import *
 
 # menu keyboard
